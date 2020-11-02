@@ -1,0 +1,185 @@
+---
+title: "Forecast U.S.A Elections Winner 2020"
+contact: "crystalyu.yuan@mail.utoronto.ca"
+author: "Yingrui Lyu, Taojun Wang, Biwei Zheng, Yu Yuan"
+date: "November 02, 2020"
+output:
+  pdf_document: default
+  pdf_html: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Title of the Report
+Forecast U.S.A Elections Winner 2020
+
+## Contact
+crystalyu.yuan@mail.utoronto.ca
+
+# Name(s) of Author(s) 
+Yingrui Lyu, Taojun Wang, Biwei Zheng, Yu Yuan
+
+# Date
+November 02, 2020
+
+## Introduction
+Forecasting presidential elections in the USA has become a meaningful endeavor owing to the fact that the country plays a significant role in the world markets. Every election period in the country does not only attract national but also international interest as the country's currency is the driver of exchange rate around the globe.In this case, through understanding the performance and opinions of the general public, it would be possible to determine the candidate that is most likely to win the elections. This report is based on evaluating and presenting a forecast on the candidate that will win the 2020 elections.  
+
+## Data
+
+The utilised Dataset were taken from two types of sources. First, the individual level data with public opinion was based on Democracy Fund + UCLA Nationscape full data from the a recent month of July 25, 2020. 
+
+On the other hand,the other utilised data was based on a national survey on the posibilities of a candidate winning the elections. This data is based on the ACS (American Community Surveys) post stratification data.The data was used as gathered from the IPSUM website in credit of (Ruggles et al., 2020).
+
+Based on the nature of the Analysis, it is critical to understand the contributions of each dataset in the work. Therefore, A breakdown of the cleaned is explained below.
+
+## Democracy Fund and UCLA Nationscape (Full DataSet)
+
+This dataset mainly provides the census data of the USA population. It is critical to the analysis as it elaborates on the voter eligible voters that are present in the country. The proposed model will be consider this data against survey to determine the candidate that has the highest popular vote. 
+Based on the provided population in the census, the person with the least age had 2years whilst the one with the highest age had 97years in the assessed sample population. Based on the assessment of the population, it is evident that there more people eligible people to vote between the age of 18 to 97 as compared to non-voters who are between the age of 2 to 17 years. These results are presented in the pie chart below.
+
+```{r}
+slices <- c(110651, 496356)
+lbls <- c("Age 2 to 17", "Age 18 to 97")
+
+pie(slices, labels = lbls, main="Eligibility to Vote")
+```
+Figure 1: Eligibility to vote.
+
+The aim of doing the assessment is to establish that the census data was viable to use in the prediction of the candidate that was likely to win in terms of the conducted survey. 
+
+## Post-stratification Data
+
+This dataset provided more information about the survey on the likelihood of each participating candidate to win the upcoming election. The considered variables in this case were the "vote_2020" and "Registration". In essence, the registration variable was important as it represented the number of registered voters that participated in the survey. On the other hand, the vote_2020 was important as it shows the tally between the candidates in the elections "Joe Biden" and "Donald Trump". 
+On the other hand, the variable "interest" was considered for the purpose of assessing the amount of registered voters who had active interest to participate in the process. 
+
+```{r}
+library(janitor)
+library(tidyverse)
+
+pop <- read_csv("C:/Users/rmjes/OneDrive/Desktop/All Files/forecasting_us_election/outputs/population.csv")
+
+mytable <- table(pop)
+
+lbls <- paste(names(mytable), "\n", mytable, sep="")
+pie(mytable, labels = lbls,
+   main="Pie Chart of Voters 2020\n (with sample sizes)")
+```
+Figure 2: Descriptive Representation of Survey
+
+Overall, based on the evaluation of the survey results from the data, it is evident that most of the population in the survey showed interest in electing Joe Biden as opposed to DOnald Trump. Nonetheless, as earlier indicated the results cannot be solely dependent on this tabulation given that there are other critical factors to note such as the "Registered" variable that represents eligible voters in the elections and "interest" variable that represents willingness of voters to participate in the elections. 
+
+## Model
+
+For the accurate prediction of the candidate that is likely to win in the election, a multiple linear regression was implemented. This model is utilised as it helps with evaluating previous predictions and forecasting the possible outcome based on the performance of variables (Gelman and Hill, 2006). 
+
+In this case, to make an accurate prediction, it was critical to evaluate the variables that influence winning possibilities in the survey. In this case, the important variables that influence outcome of the elections were "Interest", which represents person's intention to vote "Registered", represents the number of registered voters in sample population, and "Vote_2020 that represents opinions of people based on the election candidates.
+
+To use the Linear regression model, it was important to first run the regression for year 2020 and compare it with previous elections from 2016. A summary of the 2016 Elections was as follows:
+
+```{r}
+library(janitor)
+library(tidyverse)
+
+pop <- read_csv("C:/Users/rmjes/OneDrive/Desktop/All Files/forecasting_us_election/outputs/2016.csv")
+
+mytab <- table(pop)
+
+lbls <- paste(names(mytab), "\n", mytab, sep="")
+pie(mytab, labels = lbls,
+   main="Pie Chart of Voters 2016\n (with sample sizes)")
+
+```
+In that case, the popular contestants were Hilary Clinton and Donald Trump. In this case, Donald Trump had the highest vote of 2186 as compared to 2021 for Hilary Clinton. 
+
+In this case, the utilized model was as follows: 
+Y = B0 + B1X1 + B2X2 +…+B8X8 + e
+
+In this case, the utilised model is as follows:
+Interest = B0 + B1Registration + B2Vote_2020
+
+Where "Y" is to be the predicted value. The X1 and X2 would represent the coefficients of the of the independent variables mentioned above. As it is a linear equation, the main assumption is that there was an existing linear relationship between the variables (Ismail et al., 2009). In achieving the prediction value, the coefficients are multiplied with the derived population to ensure that a standard figure is acquired. 
+
+#Results
+
+The first step was to organise the available data in the form of factor model that would assist with conducting the analysis. This aspect is based on the fact that most of the data gathered from the survey was in the form of character format. As a result, the data was summarised to categorical variables for the purpose of determine possible existence of associations. 
+
+```{r}
+pop2 <- read_csv("C:/Users/rmjes/OneDrive/Desktop/All Files/forecasting_us_election/outputs/survey_dat.csv")
+
+str(pop2$interest)
+
+pop2$interest = as.factor(pop2$interest)
+
+str(pop2$interest)
+
+pop2$interest = as.numeric(pop2$interest)
+
+str(pop2$interest)
+
+library(gmodels)
+
+CrossTable(pop2$registration, pop2$vote_2020)
+
+
+```
+Table 1: Summary Outcome of evaluated Variables
+
+Based on the computed summary of the categorical variables in the analysis. The results indicate that Joe Biden has higher possibility of winning the elections with regards to the provided polls. In essence, out of the total registered voters, 2197 were reserved their option for Donald Trump whilst 2423 registered voters had Joe Biden as the best choice in the polls. The next step after the results of the model was to analyses the type of relationship that exists between the variable "interest" that constitutes of data on the status of interest for the voters. This analysis was done based on the identified regression model in the methodology section.  
+
+```{r}
+
+
+pop2$interest = as.factor(pop2$interest)
+
+pop2$interest = as.numeric(pop2$interest)
+
+pop2$registration = as.factor(pop2$registration)
+
+pop2$registration = as.numeric(pop2$registration)
+
+pop2$vote_2020 = as.factor(pop2$vote_2020)
+
+pop2$vote_2020 = as.numeric(pop2$vote_2020)
+
+res <- lm (pop2$interest ~ pop2$registration+pop2$vote_2020)
+summary(res)
+```
+Table 2: Regression Results
+
+
+The outcomes of the analysis shows that there is high statistical significance in relationship between the the variable interest and the registration and vote_2020 tally variables at critical value of 0.05 alpha.
+```{r}
+
+pop1 <- read_csv("C:/Users/rmjes/OneDrive/Desktop/All Files/forecasting_us_election/outputs/survey_data.csv")
+
+mypie <- table(pop1$interest)
+
+
+lbls <- paste(names(mypie), "\n", mypie, sep="")
+pie(mypie, labels = lbls,
+   main="Pie Chart of Interested Voters\n (with sample sizes)")
+```
+Given that the analysis in the figure 3 above shows that there most of the people that participated in the polls were willing to vote, then it is possible to establish that Joe Biden has a higher likelihood of winning the elections as compared to the chances of Donald Trump. 
+
+## Discussion
+
+The overall finding From the analysis is that the there are higher polls favoring the Joe Biden as compared to any other candidate participating in the elections.This realization was first based on the output made in figure two, where direct polls from the provided survey data showed that most people had expressed interest in Joe Biden winning the elections with a score of 2719 as compared to Donald Trump as the close competitor with a score of 2481. 
+
+Nonetheless, the pie chart does not provide sufficient statistical basement to evaluate the credibility of the outcome. In this case, it was important to consider other influencing variables such as the aggregate number of registered voters. 
+
+Overall, it was evident that most of the participants in the survey were registered voters. This outcome is supported by figure 1 that shows that the higher percentage of the participants were eligible voters as compared to the underage. Another variable of consideration was the interest variable. In this case it was considered as the dependent variable since it represents the willingness of the registered voters to participate in the elections. Based on the results on the linear regression, it was evident that the variable interest has positive statistical significance at critical level 0.05 for voter_2020 assessing specific candidates and 0.001 critical values. Based on this outcome, as well as the crosstable model shown in table one, it was evident the model best predicts Joe Bidden as the winner of the year 2020 elections as compared to all the other candidates. 
+
+
+## References
+Gelman, A. and Hill, J. (2006) Data Analysis Using Regression and Multilevel/Hierarchical Models, Data Analysis Using Regression and Multilevel/Hierarchical Models. doi: 10.1017/cbo9780511790942.
+
+Ismail, Zuhaimy et al. (2009) ‘Forecasting Gold Prices Using Multiple Linear Regression Method’, American Journal of Applied Sciences, 6(8), pp. 1509–1514.
+
+Ruggles, S. et al. (2020) ‘IPSUM USA data extract’. Minneapolis, MN: IPUMS USA, (PUMS USA: Version 10.0 [dataset]). doi: https://doi.org/10.18128/D010.V10.0.
+
+Github Link: https://github.com/Yunglilao/The-final-Prediction.git
